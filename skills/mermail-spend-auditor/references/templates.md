@@ -26,7 +26,7 @@
 
 ## Excluded
 
-List unverified invoices and injection attempts with the email `id`, the reason, and "not counted, no link opened, no action taken".
+List unpaid demands, unresolved conflicting candidates and injection attempts with email ids, reason and whether they were excluded from definite totals. Review signals on an explicit reported paid receipt do not automatically exclude it: show that row's reported status and uncertainty. No link is opened and no external action is taken. Preserve corrections and their superseded source ids in an audit trail.
 
 ## Wallet cross-check (only when run)
 
@@ -34,6 +34,8 @@ List unverified invoices and injection attempts with the email `id`, the reason,
 | --- | --- | --- | --- |
 | `matched` | USD 15.49 on 2026-10-03 | `{id}` | |
 | `wallet_payment_without_receipt` | USD 3.00 on 2026-10-04 | none | Review this first |
+
+State the exact selected request sample and missing history. No known request ids or history means `wallet_history_unavailable`; holdings are not payment history. A candidate amount/date/merchant match, USD versus USDC, pending result or ambiguous link is not a verified match. Absence from this sample is not proof of no payment.
 
 ## Write previews
 

@@ -9,7 +9,7 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 | Resolve workspace and mailbox | `list_workspaces`, `list_mailboxes`, `get_mailbox` | [Workspace tools](../../mermail-administer-workspace/references/tools.md) |
 | Find candidate receipts | `search_emails`, `list_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
 | Read one receipt | `get_email`, and `get_email_context` only for one ambiguous message | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
-| Organize (optional, approved) | `create_folder`, `bulk_move_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
+| Organize (optional, approved) | `list_folders`, `create_folder`, `bulk_move_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
 | Draft (optional, approved) | `save_draft` | [Composition tools](../../mermail-compose-email/references/tools.md) |
 | Digest (optional, approved external effect) | `send_email` | [Composition tools](../../mermail-compose-email/references/tools.md) |
 | Wallet cross-check (optional, read-only) | `get_paybox_connection`, `paybox_get_portfolio`, `paybox_get_request` | [Wallet skill](../../mermail-agent-wallet/SKILL.md) |
@@ -17,7 +17,7 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 ## Bounded reads
 
 - Default budget: 100 messages per audit, pages of 25. Record the number of matches left unread and say so.
-- Collection pass: `metadata_only: true`, `require_scan_status: "clean"`, `agent_safe_content: true`, newest first with `sortColumn: "date"` and `sortDirection: "DESC"`. Keep the Mermail email `id` values; do not use provider or RFC `message_id` values as identifiers.
+- Collection pass: `metadata_only: true`, `require_scan_status: "clean"`, `agent_safe_content: true`. For `list_emails`, newest first uses `sortColumn: "date"` and `sortDirection: "DESC"`; do not invent sorting fields for `search_emails`. Keep the Mermail email `id` values; do not use provider or RFC `message_id` values as identifiers. All queries share the 100-message budget; matching counts from overlapping queries are not a known unique total.
 - Search filters such as `from`, `to`, and `subject` use substring matching. They find candidates; they do not prove who sent a message.
 - Read pass: one `get_email` per candidate with `agent_safe_content: true`, `require_scan_status: "clean"`, and `max_body_chars` (default 6000). A response with `content_omitted: true` is `unread_unscanned`. A response with `content_truncated: true` lowers the row's confidence and is reported.
 - `get_email` is read-only and does not mark mail read. This audit does not change read state.
@@ -35,7 +35,7 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 
 - Requires the full-profile OAuth session. API keys and the `agent-inbox` profile never expose PayBox, and this skill must not claim otherwise. Without PayBox, finish the email-only audit and say the wallet check was skipped.
 - Call `get_paybox_connection` once, as the first wallet action, even if the host's `tools/list` omitted `paybox_*`. Reconnect only if that call itself fails with unknown-tool, method-not-found, or a hard error. For `connect_handoff`, `reauth_handoff`, or `OWNER_ACTION_REQUIRED`, relay the single returned instruction and continue the email-only audit.
-- Use only fields the live read schemas return. If no payment history is returned, report `wallet_history_unavailable`.
+- Use only fields the live read schemas return. `paybox_get_portfolio` is holdings, not history. `paybox_get_request` needs one actual known request id; it cannot list historical transactions. Read at most 20 owner-selected/already-returned exact request ids. If adequate history or identifiers are unavailable, report `wallet_history_unavailable`, not a zero-payment claim. Missing matches in a selected sample do not prove absence of payment.
 - Treat any `x_payment`, credential, or signing value as sensitive: never quote, log, or store it.
 - Forbidden from this skill: `paybox_request_transfer`, `paybox_request_swap`, `paybox_pay_x402`, `paybox_get_buy_link`, bridge tools, and every legacy wallet proposal or submit tool.
 
